@@ -1,5 +1,9 @@
 package br.com.alura.school.course;
 
+import br.com.alura.school.enrollment.Enrollment;
+import br.com.alura.school.enrollment.EnrollmentRepository;
+import br.com.alura.school.enrollment.NewEnrollmentRequest;
+import br.com.alura.school.user.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
@@ -17,8 +21,16 @@ class CourseController {
 
   private final CourseRepository courseRepository;
 
-  CourseController(CourseRepository courseRepository) {
+  private final EnrollmentRepository enrollmentRepository;
+  private final UserRepository userRepository;
+
+  CourseController(
+      CourseRepository courseRepository,
+      EnrollmentRepository enrollRepository,
+      UserRepository userRepository) {
     this.courseRepository = courseRepository;
+    this.enrollmentRepository = enrollRepository;
+    this.userRepository = userRepository;
   }
 
   @GetMapping("/courses")
@@ -51,5 +63,29 @@ class CourseController {
     courseRepository.save(newCourseRequest.toEntity());
     URI location = URI.create(format("/courses/%s", newCourseRequest.getCode()));
     return ResponseEntity.created(location).build();
+  }
+
+  @PostMapping("/courses/{courseCode}/enroll")
+  ResponseEntity<Enrollment> enroll(
+      @PathVariable("courseCode") String courseCode,
+      @RequestBody @Valid NewEnrollmentRequest newEnrollmentRequest) {
+
+    if (enrollmentRepository
+        .findByCourseCodeAndUsername(courseCode, newEnrollmentRequest.getUsername())
+        .isPresent()) {
+      return ResponseEntity.badRequest().build();
+    }
+    if (userRepository.findByUsername(newEnrollmentRequest.getUsername()).isEmpty()
+        || courseRepository.findByCode(courseCode).isEmpty()) {
+      return ResponseEntity.notFound().build();
+    }
+
+    Enrollment enrollment = newEnrollmentRequest.toEntity();
+    enrollment.setCourseCode(courseCode);
+    enrollmentRepository.save(enrollment);
+
+    URI location = URI.create(format("/courses/%s/enroll", courseCode));
+
+    return ResponseEntity.created(location).body(enrollment);
   }
 }
