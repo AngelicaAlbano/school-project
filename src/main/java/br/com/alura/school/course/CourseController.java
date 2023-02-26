@@ -2,7 +2,9 @@ package br.com.alura.school.course;
 
 import br.com.alura.school.enrollment.Enrollment;
 import br.com.alura.school.enrollment.EnrollmentRepository;
+import br.com.alura.school.enrollment.EnrollmentResponse;
 import br.com.alura.school.enrollment.NewEnrollmentRequest;
+import br.com.alura.school.user.User;
 import br.com.alura.school.user.UserRepository;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,6 +58,40 @@ class CourseController {
                     new ResponseStatusException(
                         NOT_FOUND, format("Course with code %s not found", code)));
     return ResponseEntity.ok(new CourseResponse(course));
+  }
+
+  @GetMapping("/courses/enroll/report")
+  public ResponseEntity<List<EnrollmentResponse>> enrollmentReport() {
+
+    if (enrollmentRepository.findAll().isEmpty()) {
+      return ResponseEntity.noContent().build();
+    }
+    List<EnrollmentResponse> enrollments = new ArrayList<>();
+    enrollmentRepository
+        .findAll()
+        .forEach(
+            enrollment -> {
+              int amountEnrollments =
+                  enrollmentRepository.countAllByUsername(enrollment.getUsername());
+              User userToReport =
+                  userRepository.findByUsername(enrollment.getUsername()).orElse(null);
+              if (amountEnrollments >= 1) {
+
+                assert userToReport != null;
+                EnrollmentResponse enrollmentResponse =
+                    new EnrollmentResponse(userToReport.getEmail(), amountEnrollments);
+
+                if (enrollments.stream()
+                    .noneMatch(
+                        enrollmentResponse1 ->
+                            enrollmentResponse1.getEmail().equals(userToReport.getEmail()))) {
+
+                  enrollments.add(enrollmentResponse);
+                }
+              }
+            });
+
+    return ResponseEntity.ok().body(enrollments);
   }
 
   @PostMapping("/courses")

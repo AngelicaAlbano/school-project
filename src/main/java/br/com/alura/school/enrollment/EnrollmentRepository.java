@@ -7,4 +7,6 @@ import java.util.Optional;
 public interface EnrollmentRepository extends JpaRepository<Enrollment, Long> {
 
   Optional<Enrollment> findByCourseCodeAndUsername(String courseCode, String username);
+
+  int countAllByUsername(String username);
 }

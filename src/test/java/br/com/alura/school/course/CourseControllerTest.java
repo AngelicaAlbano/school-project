@@ -87,11 +87,8 @@ class CourseControllerTest {
 
   @Test
   void should_enroll_user_course() throws Exception {
-    courseRepository.save(
-        new Course(
-            "java-1",
-            "Java OO",
-            "Java and Object Orientation: Encapsulation, Inheritance and Polymorphism."));
+    should_retrieve_course_by_code();
+    should_add_new_course();
     userRepository.save(new User("ana", "ana@email.com"));
 
     NewEnrollmentRequest newEnrollmentRequest =
@@ -138,5 +135,27 @@ class CourseControllerTest {
                 .content(jsonMapper.writeValueAsString(newEnrollmentRequest)))
         .andDo(print())
         .andExpect(status().isNotFound());
+  }
+
+  @Test
+  void should_retrieve_enrollment_report() throws Exception {
+    should_enroll_user_course();
+
+    mockMvc
+        .perform(get("/courses/enroll/report").accept(MediaType.APPLICATION_JSON))
+        .andExpect(status().isOk())
+        .andExpect(content().contentType(MediaType.APPLICATION_JSON))
+        .andExpect(jsonPath("$.length()", is(1)))
+        .andExpect(jsonPath("$[0].email", is("ana@email.com")))
+        .andExpect(jsonPath("$[0].amountEnrollments", is(1)));
+  }
+
+  @Test
+  void no_content_when_enrollments_amount_less_than_one() throws Exception {
+
+    mockMvc
+        .perform(get("/courses/enroll/report").accept(MediaType.APPLICATION_JSON))
+        .andDo(print())
+        .andExpect(status().isNoContent());
   }
 }
