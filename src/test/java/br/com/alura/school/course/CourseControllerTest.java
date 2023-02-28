@@ -1,14 +1,14 @@
 package br.com.alura.school.course;
 
 import br.com.alura.school.enrollment.NewEnrollmentRequest;
-import br.com.alura.school.user.User;
-import br.com.alura.school.user.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
@@ -20,6 +20,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
+@DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 @Sql(scripts = "classpath:schema.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
 class CourseControllerTest {
 
@@ -28,7 +30,6 @@ class CourseControllerTest {
   @Autowired private MockMvc mockMvc;
 
   @Autowired private CourseRepository courseRepository;
-  @Autowired private UserRepository userRepository;
 
   @Test
   void should_retrieve_course_by_code() throws Exception {
@@ -81,12 +82,10 @@ class CourseControllerTest {
   }
 
   @Test
+  @Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   void should_enroll_user_course() throws Exception {
-    should_retrieve_course_by_code();
-    should_add_new_course();
-    userRepository.save(new User("ana", "ana@email.com"));
 
-    NewEnrollmentRequest newEnrollmentRequest = new NewEnrollmentRequest("ana", "java-1");
+    NewEnrollmentRequest newEnrollmentRequest = new NewEnrollmentRequest("alex");
 
     mockMvc
         .perform(
@@ -100,11 +99,11 @@ class CourseControllerTest {
   @Test
   void should_not_allow_enroll_non_existing_user() throws Exception {
 
-    NewEnrollmentRequest newEnrollmentRequest = new NewEnrollmentRequest("bianca", "java-1");
+    NewEnrollmentRequest newEnrollmentRequest = new NewEnrollmentRequest("bianca");
 
     mockMvc
         .perform(
-            post("/courses/java-1/enroll")
+            post("/courses/%s/enroll", "java-1")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(jsonMapper.writeValueAsString(newEnrollmentRequest)))
         .andDo(print())
@@ -114,7 +113,7 @@ class CourseControllerTest {
   @Test
   void should_not_allow_enroll_non_existing_course() throws Exception {
 
-    NewEnrollmentRequest newEnrollmentRequest = new NewEnrollmentRequest("ana", "python-1");
+    NewEnrollmentRequest newEnrollmentRequest = new NewEnrollmentRequest("ana");
 
     mockMvc
         .perform(
@@ -126,8 +125,8 @@ class CourseControllerTest {
   }
 
   @Test
+  @Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
   void should_retrieve_enrollment_report() throws Exception {
-    should_enroll_user_course();
 
     mockMvc
         .perform(get("/courses/enroll/report").accept(MediaType.APPLICATION_JSON))

@@ -14,6 +14,7 @@ import javax.validation.Valid;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static java.lang.String.format;
 import static org.springframework.http.HttpStatus.NOT_FOUND;
@@ -22,7 +23,6 @@ import static org.springframework.http.HttpStatus.NOT_FOUND;
 class CourseController {
 
   private final CourseRepository courseRepository;
-
   private final EnrollmentRepository enrollmentRepository;
   private final UserRepository userRepository;
 
@@ -67,29 +67,14 @@ class CourseController {
       return ResponseEntity.noContent().build();
     }
     List<EnrollmentResponse> enrollments = new ArrayList<>();
-    enrollmentRepository
-        .findAll()
-        .forEach(
-            enrollment -> {
-              int amountEnrollments =
-                  enrollmentRepository.countAllByUsername(enrollment.getUsername());
-              User userToReport =
-                  userRepository.findByUsername(enrollment.getUsername()).orElse(null);
-              if (amountEnrollments >= 1) {
-
-                assert userToReport != null;
-                EnrollmentResponse enrollmentResponse =
-                    new EnrollmentResponse(userToReport.getEmail(), amountEnrollments);
-
-                if (enrollments.stream()
-                    .noneMatch(
-                        enrollmentResponse1 ->
-                            enrollmentResponse1.getEmail().equals(userToReport.getEmail()))) {
-
-                  enrollments.add(enrollmentResponse);
-                }
-              }
-            });
+    List<User> users = userRepository.findAll();
+    users.forEach(
+        user -> {
+          int amountEnrollments = enrollmentRepository.countAllByUserUsername(user.getUsername());
+          if (amountEnrollments >= 1) {
+            enrollments.add(new EnrollmentResponse(user.getEmail(), amountEnrollments));
+          }
+        });
 
     return ResponseEntity.ok().body(enrollments);
   }
@@ -106,18 +91,16 @@ class CourseController {
       @PathVariable("courseCode") String courseCode,
       @RequestBody @Valid NewEnrollmentRequest newEnrollmentRequest) {
 
-    if (enrollmentRepository
-        .findByCourseCodeAndUsername(courseCode, newEnrollmentRequest.getUsername())
-        .isPresent()) {
+    Optional<User> user = userRepository.findByUsername(newEnrollmentRequest.getUsername());
+    if (enrollmentRepository.existsByCourseCodeAndUserUsername(
+        courseCode, newEnrollmentRequest.getUsername())) {
       return ResponseEntity.badRequest().build();
     }
-    if (userRepository.findByUsername(newEnrollmentRequest.getUsername()).isEmpty()
-        || courseRepository.findByCode(courseCode).isEmpty()) {
+    if (user.isEmpty() || courseRepository.findByCode(courseCode).isEmpty()) {
       return ResponseEntity.notFound().build();
     }
 
-    Enrollment enrollment = newEnrollmentRequest.toEntity();
-    enrollment.setCourseCode(courseCode);
+    Enrollment enrollment = newEnrollmentRequest.toEntity(user.get(), courseCode);
     enrollmentRepository.save(enrollment);
 
     URI location = URI.create(format("/courses/%s/enroll", courseCode));

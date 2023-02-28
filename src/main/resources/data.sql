@@ -8,5 +8,5 @@ values ('java-1', 'Java OO', 'Java and Object Orientation: Encapsulation, Inheri
 insert into Course (code, name, description)
 values ('java-2', 'Java Collections', 'Java Collections: Lists, Sets, Maps and more.');
 
-insert into Enrollment(username, registerDate, coursecode)
-values ('ana', '2023-03-01', 'java-1');
+insert into ENROLLMENT(USER_ID, registerDate, courseCode)
+values (2, '1994-04-19 07:00:00', 'java-1');

@@ -1,12 +1,8 @@
 package br.com.alura.school.enrollment;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
+import br.com.alura.school.user.User;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.Id;
-import javax.validation.constraints.NotBlank;
+import javax.persistence.*;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
@@ -18,33 +14,29 @@ public class Enrollment {
   @GeneratedValue(strategy = IDENTITY)
   private Long id;
 
-  @Size(max = 20)
-  @NotBlank
-  @Column(nullable = false)
-  private String username;
+  @OneToOne
+  @JoinColumn(name = "user_id")
+  private User user;
 
   @Size(max = 10)
-  @NotBlank
   @Column(nullable = false)
   private String courseCode;
 
-  @Column(nullable = false)
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "uuuu-MM-dd'T'HH:mm:ss.SSS")
-  private final LocalDateTime registerDate = LocalDateTime.now();
+  private LocalDateTime registerDate = LocalDateTime.now();
 
   public Enrollment() {}
 
-  public Enrollment(String username, String courseCode) {
+  public Enrollment(User user, String courseCode) {
     this.courseCode = courseCode;
-    this.username = username;
+    this.user = user;
   }
 
-  public String getUsername() {
-    return username;
+  public User getUser() {
+    return user;
   }
 
-  public void setUsername(String username) {
-    this.username = username;
+  public void setUser(User user) {
+    this.user = user;
   }
 
   public LocalDateTime getRegisterDate() {
