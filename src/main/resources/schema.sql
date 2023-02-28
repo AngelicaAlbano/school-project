@@ -21,8 +21,8 @@ DROP TABLE IF EXISTS Enrollment;
 
 CREATE TABLE Enrollment
 (
-    id         BIGINT AUTO_INCREMENT PRIMARY KEY,
-    username   VARCHAR(20) NOT NULL,
-    date       VARCHAR(30),
-    courseCode VARCHAR(10)
+    id           BIGINT AUTO_INCREMENT PRIMARY KEY,
+    username     VARCHAR(20) NOT NULL,
+    registerDate TIMESTAMP,
+    courseCode   VARCHAR(10)
 );

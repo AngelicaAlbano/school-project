@@ -4,6 +4,8 @@ import br.com.alura.school.enrollment.NewEnrollmentRequest;
 import br.com.alura.school.user.User;
 import br.com.alura.school.user.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -12,10 +14,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
 
-import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.util.Date;
-import java.util.TimeZone;
+import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -92,17 +91,16 @@ class CourseControllerTest {
     userRepository.save(new User("ana", "ana@email.com"));
 
     NewEnrollmentRequest newEnrollmentRequest =
-        new NewEnrollmentRequest("ana", Date.from(Instant.now()), "java-1");
+        new NewEnrollmentRequest("ana", LocalDateTime.now(), "java-1");
 
-    SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd");
-    df.setTimeZone(TimeZone.getTimeZone("UTC"));
-    String toParse = df.format(newEnrollmentRequest.getDate());
-    Date date = df.parse(toParse);
-    String result = jsonMapper.writeValueAsString(newEnrollmentRequest);
+    jsonMapper.registerModule(new JavaTimeModule());
+    jsonMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     mockMvc
         .perform(
-            post("/courses/java-1/enroll").contentType(MediaType.APPLICATION_JSON).content(result))
+            post("/courses/java-1/enroll")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(newEnrollmentRequest)))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", "/courses/java-1/enroll"));
   }
@@ -111,7 +109,10 @@ class CourseControllerTest {
   void should_not_allow_enroll_non_existing_user() throws Exception {
 
     NewEnrollmentRequest newEnrollmentRequest =
-        new NewEnrollmentRequest("bianca", Date.from(Instant.now()), "java-1");
+        new NewEnrollmentRequest("bianca", LocalDateTime.now(), "java-1");
+
+    jsonMapper.registerModule(new JavaTimeModule());
+    jsonMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     mockMvc
         .perform(
@@ -126,7 +127,10 @@ class CourseControllerTest {
   void should_not_allow_enroll_non_existing_course() throws Exception {
 
     NewEnrollmentRequest newEnrollmentRequest =
-        new NewEnrollmentRequest("ana", Date.from(Instant.now()), "python-1");
+        new NewEnrollmentRequest("ana", LocalDateTime.now(), "python-1");
+
+    jsonMapper.registerModule(new JavaTimeModule());
+    jsonMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
 
     mockMvc
         .perform(

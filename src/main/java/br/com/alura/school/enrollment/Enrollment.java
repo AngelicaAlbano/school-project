@@ -8,8 +8,7 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Size;
-import java.time.Instant;
-import java.util.Date;
+import java.time.LocalDateTime;
 
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -30,16 +29,16 @@ public class Enrollment {
   private String courseCode;
 
   @Column(nullable = false)
-  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd")
-  private Date date;
+  @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "uuuu-MM-dd'T'HH:mm:ss.SSS")
+  private LocalDateTime registerDate;
 
   @Deprecated
   public Enrollment() {}
 
-  public Enrollment(String username, Date date, String courseCode) {
+  public Enrollment(String username, LocalDateTime registerDate, String courseCode) {
     this.courseCode = courseCode;
     this.username = username;
-    this.date = Date.from(Instant.now());
+    this.registerDate = LocalDateTime.now();
   }
 
   public String getUsername() {
@@ -50,12 +49,12 @@ public class Enrollment {
     this.username = username;
   }
 
-  public Date getDate() {
-    return date;
+  public LocalDateTime getRegisterDate() {
+    return registerDate;
   }
 
-  public void setDate(Date date) {
-    this.date = date;
+  public void setRegisterDate(LocalDateTime registerDate) {
+    this.registerDate = registerDate;
   }
 
   public String getCourseCode() {
