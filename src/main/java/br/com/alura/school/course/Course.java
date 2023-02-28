@@ -12,41 +12,39 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Entity
 class Course {
 
-    @Id
-    @GeneratedValue(strategy = IDENTITY)
-    private Long id;
+  @Id
+  @GeneratedValue(strategy = IDENTITY)
+  private Long id;
 
-    @Size(max=10)
-    @NotBlank
-    @Column(nullable = false, unique = true)
-    private String code;
+  @Size(max = 10)
+  @NotBlank
+  @Column(nullable = false, unique = true)
+  private String code;
 
-    @Size(max=20)
-    @NotBlank
-    @Column(nullable = false, unique = true)
-    private String name;
+  @Size(max = 20)
+  @NotBlank
+  @Column(nullable = false, unique = true)
+  private String name;
 
-    private String description;
+  private String description;
 
-    @Deprecated
-    protected Course() { }
+  protected Course() {}
 
-    Course(String code, String name, String description) {
-        this.code = code;
-        this.name = name;
-        this.description = description;
-    }
+  Course(String code, String name, String description) {
+    this.code = code;
+    this.name = name;
+    this.description = description;
+  }
 
-    String getCode() {
-        return code;
-    }
+  String getCode() {
+    return code;
+  }
 
-    String getName() {
-        return name;
-    }
+  String getName() {
+    return name;
+  }
 
-    String getDescription() {
-        return description;
-    }
-
+  String getDescription() {
+    return description;
+  }
 }

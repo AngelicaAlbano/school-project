@@ -4,8 +4,6 @@ import br.com.alura.school.enrollment.NewEnrollmentRequest;
 import br.com.alura.school.user.User;
 import br.com.alura.school.user.UserRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.SerializationFeature;
-import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -13,8 +11,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
-
-import java.time.LocalDateTime;
 
 import static org.hamcrest.Matchers.is;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -90,11 +86,7 @@ class CourseControllerTest {
     should_add_new_course();
     userRepository.save(new User("ana", "ana@email.com"));
 
-    NewEnrollmentRequest newEnrollmentRequest =
-        new NewEnrollmentRequest("ana", LocalDateTime.now(), "java-1");
-
-    jsonMapper.registerModule(new JavaTimeModule());
-    jsonMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    NewEnrollmentRequest newEnrollmentRequest = new NewEnrollmentRequest("ana", "java-1");
 
     mockMvc
         .perform(
@@ -108,11 +100,7 @@ class CourseControllerTest {
   @Test
   void should_not_allow_enroll_non_existing_user() throws Exception {
 
-    NewEnrollmentRequest newEnrollmentRequest =
-        new NewEnrollmentRequest("bianca", LocalDateTime.now(), "java-1");
-
-    jsonMapper.registerModule(new JavaTimeModule());
-    jsonMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    NewEnrollmentRequest newEnrollmentRequest = new NewEnrollmentRequest("bianca", "java-1");
 
     mockMvc
         .perform(
@@ -126,11 +114,7 @@ class CourseControllerTest {
   @Test
   void should_not_allow_enroll_non_existing_course() throws Exception {
 
-    NewEnrollmentRequest newEnrollmentRequest =
-        new NewEnrollmentRequest("ana", LocalDateTime.now(), "python-1");
-
-    jsonMapper.registerModule(new JavaTimeModule());
-    jsonMapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+    NewEnrollmentRequest newEnrollmentRequest = new NewEnrollmentRequest("ana", "python-1");
 
     mockMvc
         .perform(

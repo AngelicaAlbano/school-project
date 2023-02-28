@@ -30,15 +30,13 @@ public class Enrollment {
 
   @Column(nullable = false)
   @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "uuuu-MM-dd'T'HH:mm:ss.SSS")
-  private LocalDateTime registerDate;
+  private final LocalDateTime registerDate = LocalDateTime.now();
 
-  @Deprecated
   public Enrollment() {}
 
-  public Enrollment(String username, LocalDateTime registerDate, String courseCode) {
+  public Enrollment(String username, String courseCode) {
     this.courseCode = courseCode;
     this.username = username;
-    this.registerDate = LocalDateTime.now();
   }
 
   public String getUsername() {
@@ -51,10 +49,6 @@ public class Enrollment {
 
   public LocalDateTime getRegisterDate() {
     return registerDate;
-  }
-
-  public void setRegisterDate(LocalDateTime registerDate) {
-    this.registerDate = registerDate;
   }
 
   public String getCourseCode() {
