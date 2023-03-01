@@ -73,3 +73,30 @@ Location: /courses/spring-1
 Content-Length: 0
 Date: Sun, 02 May 2021 21:54:14 GMT
 ```
+
+- `POST /courses/{courseCode}/enroll` realiza a matrícula de um usuário em um curso
+```sh
+curl -i -X POST -H 'Content-type: application/json' -d '{"username": "ana"}' http://localhost:8080/courses/{courseCode}/enroll
+```
+
+```txt
+HTTP/1.1 201 
+Location: /courses/java-2/enroll
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 01 Mar 2023 01:58:27 GMT
+```
+
+- `GET /courses/enroll/report` obtém relatório com e-mail e quantidade de matrículas por usuário
+```sh
+curl -i http://localhost:8080/courses/enroll/report
+```
+
+```txt
+HTTP/1.1 200 
+Content-Type: application/json
+Transfer-Encoding: chunked
+Date: Wed, 01 Mar 2023 02:00:10 GMT
+
+[{"email":"ana@email.com","amountEnrollments":2}]% 
+```
