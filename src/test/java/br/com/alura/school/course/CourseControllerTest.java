@@ -11,8 +11,10 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.jdbc.Sql;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.web.server.ResponseStatusException;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
@@ -46,6 +48,14 @@ class CourseControllerTest {
         .andExpect(jsonPath("$.code", is("java-1")))
         .andExpect(jsonPath("$.name", is("Java OO")))
         .andExpect(jsonPath("$.shortDescription", is("Java and O...")));
+  }
+
+  @Test
+  void not_found_course_by_code() throws Exception {
+    mockMvc
+        .perform(get("/courses/java-1").accept(MediaType.APPLICATION_JSON))
+        .andExpect(
+            result -> assertTrue(result.getResolvedException() instanceof ResponseStatusException));
   }
 
   @Test
@@ -122,6 +132,20 @@ class CourseControllerTest {
                 .content(jsonMapper.writeValueAsString(newEnrollmentRequest)))
         .andDo(print())
         .andExpect(status().isNotFound());
+  }
+
+  @Test
+  @Sql(scripts = "classpath:data.sql", executionPhase = Sql.ExecutionPhase.BEFORE_TEST_METHOD)
+  void bad_request_enroll_existing_enrollment() throws Exception {
+    NewEnrollmentRequest newEnrollmentRequest = new NewEnrollmentRequest("ana");
+
+    mockMvc
+        .perform(
+            post("/courses/java-1/enroll")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(jsonMapper.writeValueAsString(newEnrollmentRequest)))
+        .andDo(print())
+        .andExpect(status().isBadRequest());
   }
 
   @Test
